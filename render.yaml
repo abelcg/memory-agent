@@ -1,0 +1,10 @@
+services:
+  - type: web
+    name: memory-agent
+    runtime: docker
+    plan: free
+    envVars:
+      - key: GOOGLE_API_KEY
+        sync: false
+      - key: PORT
+        value: "8000"
