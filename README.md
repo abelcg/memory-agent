@@ -93,7 +93,16 @@ The server starts on `http://localhost:8000`.
 
 ## Testing
 
-### Conversation 1 — Establish memories
+Open a **second terminal** and run these commands while the server is running:
+
+### Step 1 — Health check
+
+```bash
+curl http://localhost:8000/health
+# Expected: {"status":"ok"}
+```
+
+### Step 2 — Conversation 1: Establish memories (session s1)
 
 ```bash
 # First message: share preferences
@@ -107,10 +116,12 @@ curl -X POST http://localhost:8000/chat \
   -d '{"user_id": "user1", "message": "I am working on migrating our monolith to microservices. We use PostgreSQL and Redis.", "session_id": "s1"}'
 ```
 
-### Conversation 2 — Test cross-session recall
+After these messages, the database should contain memories for: Python preference, Acme Corp role, and microservices migration context.
+
+### Step 3 — Conversation 2: Test cross-session recall (session s2)
 
 ```bash
-# New session — agent should search memory and recall previous facts
+# New session, same user — agent should search memory and recall previous facts
 curl -X POST http://localhost:8000/chat \
   -H "Content-Type: application/json" \
   -d '{"user_id": "user1", "message": "Can you recommend a good framework for my project?", "session_id": "s2"}'
@@ -118,13 +129,31 @@ curl -X POST http://localhost:8000/chat \
 
 The agent should reference Python and the microservices migration **without the user restating them**.
 
+### Step 4 — Test other endpoints
+
+```bash
+# Reset a session
+curl -X POST http://localhost:8000/chat/reset \
+  -H "Content-Type: application/json" \
+  -d '{"session_id": "s1"}'
+# Expected: {"status":"session reset"}
+
+# Auto-generated session_id (omit session_id)
+curl -X POST http://localhost:8000/chat \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user1", "message": "What language do I prefer?"}'
+# Expected: response references Python, session_id is auto-generated
+```
+
 ## Deploy to Render
 
 1. Push the `memory-agent/` directory to a GitHub repository.
 2. Go to [render.com](https://render.com) and create a **New Web Service**.
 3. Connect your repository.
 4. Render will auto-detect the `Dockerfile` (or use the `render.yaml` blueprint).
-5. Add the environment variable `GOOGLE_API_KEY` in the Render dashboard.
+5. Add the environment variables in the Render dashboard:
+   - `GOOGLE_API_KEY` — your Google AI API key
+   - `GEMINI_MODEL` — `gemini-2.0-flash` (or `gemini-2.5-flash`)
 6. Deploy.
 
 > **Note:** On Render free tier, SQLite data persists between requests but is lost on redeploy. For production persistence, consider adding a Render Disk or migrating to PostgreSQL + pgvector.
