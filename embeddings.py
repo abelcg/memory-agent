@@ -1,8 +1,18 @@
-from sentence_transformers import SentenceTransformer
+import os
 
-_model = SentenceTransformer("all-MiniLM-L6-v2")
+from google import genai
+
+_client: genai.Client | None = None
+
+
+def configure_embeddings(api_key: str):
+    global _client
+    _client = genai.Client(api_key=api_key)
 
 
 def get_embedding(text: str) -> list[float]:
-    result = _model.encode([text], normalize_embeddings=True)
-    return result[0].tolist()
+    result = _client.models.embed_content(
+        model="gemini-embedding-001",
+        contents=text,
+    )
+    return result.embeddings[0].values

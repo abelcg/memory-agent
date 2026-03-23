@@ -8,6 +8,7 @@ from pydantic import BaseModel
 load_dotenv()
 
 from database import init_db
+from embeddings import configure_embeddings
 from agent import configure_client, chat, reset_session
 
 app = FastAPI(title="Memory Agent", version="0.1.0")
@@ -18,7 +19,9 @@ db_conn = None
 @app.on_event("startup")
 def startup():
     global db_conn
-    configure_client(api_key=os.environ["GOOGLE_API_KEY"])
+    api_key = os.environ["GOOGLE_API_KEY"]
+    configure_client(api_key=api_key)
+    configure_embeddings(api_key=api_key)
     db_conn = init_db()
 
 
