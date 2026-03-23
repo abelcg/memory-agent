@@ -145,6 +145,22 @@ curl -X POST http://localhost:8000/chat \
 # Expected: response references Python, session_id is auto-generated
 ```
 
+## Live Demo
+
+**Production URL:** https://memory-agent-9wxk.onrender.com
+
+```bash
+# Health check
+curl https://memory-agent-9wxk.onrender.com/health
+
+# Send a message
+curl -X POST https://memory-agent-9wxk.onrender.com/chat \
+  -H "Content-Type: application/json" \
+  -d '{"user_id": "user1", "message": "Hi! I prefer Python.", "session_id": "s1"}'
+```
+
+> **Note:** On Render free tier the service spins down after inactivity. The first request may take ~30s to cold-start.
+
 ## Deploy to Render
 
 1. Push the `memory-agent/` directory to a GitHub repository.
